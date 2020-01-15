@@ -1,0 +1,37 @@
+version: '3'
+services:
+    apache:
+        build: ./docker/apache
+        container_name: chalhoub_apache
+        ports:
+          - 80:80
+        volumes:
+          - ./apps:/home/wwwroot
+          - ./docker/config/vhosts:/etc/apache2/sites-enabled
+          - ./logs/apache/:/var/log/apache2
+        environment:
+          - VIRTUAL_HOST=chalhoub.api.lo
+        depends_on:
+          - php
+
+    db:
+        image: mysql:5.7.22
+        container_name: chalhoub_db
+        restart: always
+        environment:
+            MYSQL_ROOT_PASSWORD: chalhoub
+            MYSQL_DATABASE: chalhoub
+            MYSQL_USER: chalhoub
+            MYSQL_PASSWORD: chalhoub
+        volumes:
+            - ./docker/data/db/mysql:/var/lib/mysql
+        command: --innodb-use-native-aio=0
+
+    php:
+        build: ./docker/php
+        container_name: chalhoub_php
+        volumes:
+          - ./apps:/home/wwwroot
+          - ./logs/api/:/home/wwwroot/api/storage/logs
+        depends_on:
+          - db
